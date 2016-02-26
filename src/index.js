@@ -32,7 +32,7 @@ function SVGFont2SVGIcons(options) {
   var horizontalAdv = 0;
   var glyphCount = 0;
   var d = '';
-  options = options || {};
+  var iconAttrs = (options == undefined ? [] : options.iconAttrs);
 
   // Ensure new were used
   if(!(this instanceof SVGFont2SVGIcons)) {
@@ -40,9 +40,10 @@ function SVGFont2SVGIcons(options) {
   }
 
   // Initialize streams
-  inputStream = new Stream.PassThrough()
-  outputStream = new Stream.PassThrough({objectMode: true})
-  saxStream = Sax.createStream(true)
+  inputStream = new Stream.PassThrough();
+  outputStream = new Stream.PassThrough({objectMode: true});
+  saxStream = Sax.createStream(true);
+  saxStream.iconAttrs = iconAttrs;
 
   // Parent constructor
   Plexer.call(this, {
@@ -55,6 +56,7 @@ function SVGFont2SVGIcons(options) {
 
   // Listening to new tags
   saxStream.on('opentag', function(tag) {
+
     var stream = null;
     // Save the default sizes
     if('font' === tag.name) {
@@ -90,9 +92,6 @@ function SVGFont2SVGIcons(options) {
       }
       if('unicode' in tag.attributes) {
         stream.metadata.unicode = [tag.attributes.unicode];
-        if(options.nameMap && tag.attributes.unicode in options.nameMap) {
-          stream.metadata.name = options.nameMap[tag.attributes.unicode];
-        }
       }
       d = '';
       if('d' in tag.attributes) {
@@ -127,9 +126,25 @@ function SVGFont2SVGIcons(options) {
       }
       endContent = new Stream.PassThrough()
       stream.queue(endContent);
-      endContent.write('"\
+      iconAttrs = this.iconAttrs;
+      if (iconAttrs != null) {
+        var svgAttributes = '';
+        var nameref = 'g'+stream.metadata.unicode.toString().charCodeAt(0);
+        if (iconAttrs[nameref] != undefined) {
+          for (var key in iconAttrs[nameref]) {
+              var name = key; 
+              var value = iconAttrs[nameref][key];
+              svgAttributes += ' ' + name + '="' + value + '"';
+          }
+          endContent.write('"\
+       ' + svgAttributes + ' />\
+  </svg>');
+        }
+      } else {
+        endContent.write('"\
      id="' + stream.metadata.name + '" />\
 </svg>');
+      }
       endContent.end();
       stream.done();
     }
