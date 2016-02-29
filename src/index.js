@@ -100,14 +100,17 @@ function SVGFont2SVGIcons(options) {
       outputStream.write(stream);
       startContent = new Stream.PassThrough();
       stream.queue(startContent);
+      iconAttrs = this.iconAttrs;
+      var svgAttributes = '';
+      var nameref = stream.metadata.unicode[0].charCodeAt(0).toString(16).toUpperCase();
       startContent.write('<?xml version="1.0" encoding="UTF-8" standalone="no"?>\
 <svg\
    xmlns:svg="http://www.w3.org/2000/svg"\
    xmlns="http://www.w3.org/2000/svg"\
    version="1.1"\
-   width="' + stream.metadata.width + '"\
-   height="' + stream.metadata.height + '"\
-   viewBox="0 0 ' + stream.metadata.width + ' ' + stream.metadata.height + '">\
+   width="' + iconAttrs[nameref]['width'] + '"\
+   height="' + iconAttrs[nameref]['height'] + '"\
+   viewBox="' + iconAttrs[nameref]['viewBox'] + '" preserveAspectRatio="xMidYMid">\
   <path\
      d="');
       startContent.end();
@@ -126,15 +129,14 @@ function SVGFont2SVGIcons(options) {
       }
       endContent = new Stream.PassThrough()
       stream.queue(endContent);
-      iconAttrs = this.iconAttrs;
       if (iconAttrs != null) {
-        var svgAttributes = '';
-        var nameref = 'g'+stream.metadata.unicode.toString().charCodeAt(0);
         if (iconAttrs[nameref] != undefined) {
           for (var key in iconAttrs[nameref]) {
               var name = key; 
               var value = iconAttrs[nameref][key];
-              svgAttributes += ' ' + name + '="' + value + '"';
+              if (name != "path" && name != "viewBox") {
+                svgAttributes += ' ' + name + '="' + value + '"';
+              }
           }
           endContent.write('"\
        ' + svgAttributes + ' />\
