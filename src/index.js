@@ -112,7 +112,7 @@ function SVGFont2SVGIcons(options) {
    height="' + iconAttrs[nameref]['height'] + '"\
    viewBox="' + iconAttrs[nameref]['viewBox'] + '" preserveAspectRatio="xMidYMid">\
   <path\
-     class="' + iconAttrs[nameref]['id'] + 'path"\
+     class="' + iconAttrs[nameref]['id'] + '__path"\
      d="');
       startContent.end();
       // Transform the glyph content
